@@ -17,3 +17,4 @@ info:
   x-cortex-git:
     github:
       repository: cortex-workshops/payment-service
+      alias: cortex
