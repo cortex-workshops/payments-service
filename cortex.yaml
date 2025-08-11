@@ -16,5 +16,5 @@ info:
       url: https://github.com/cortex-workshops/payment-service#readme
   x-cortex-git:
     github:
-      repository: cortex-workshops/payment-service
       alias: cortex
+      repository: cortex-workshops/payments-service
