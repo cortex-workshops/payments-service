@@ -70,4 +70,46 @@ jobs:
           set -e
           git config user.name "${AUTHOR}"; git config user.email "${EMAIL}"
           BRANCH="${BRANCH}"
-          if [ $((RANDOM % 10)) -lt 3 ]; then existing=$(git ls-remote --heads origin "sim/${{ steps.pick.outputs.username }}-*" | head -n1 | awk '{print $2}' | cut -d/ -f3-); if [ -n "$existing" ]; then git fetch origin "$existing"; git checkout -b "$existing" "origin/$existing"; BRANCH="$exi*
+          if [ $((RANDOM % 10)) -lt 3 ]; then existing=$(git ls-remote --heads origin "sim/${{ steps.pick.outputs.username }}-*" | head -n1 | awk '{print $2}' | cut -d/ -f3-); if [ -n "$existing" ]; then git fetch origin "$existing"; git checkout -b "$existing" "origin/$existing"; BRANCH="$existing"; export BRANCH; echo BRANCH=$BRANCH >> $GITHUB_ENV; else git checkout -b "$BRANCH"; fi; else git checkout -b "$BRANCH"; fi
+          touch README.md; mkdir -p changelogs
+          if [ "${{ steps.scenario.outputs.value }}" = "BIG_DIFF" ]; then f="changelogs/${{ steps.pick.outputs.username }}-$(date +%s).md"; for i in $(seq 1 $((150 + RANDOM % 350))); do echo "- change $i at $(date -u)"; done > "$f"; else echo "Update by ${AUTHOR} at $(date -u)" >> README.md; fi
+          git add -A; git commit -m "feat: sim update by ${AUTHOR} at $(date -u)"
+          git push -u origin HEAD
+          set +e
+      - id: openpr
+        if: steps.auth.outputs.skip != 'true'
+        run: |
+          if [ $((RANDOM % 10)) -lt 8 ]; then URL=$(gh pr create --title "Sim PR by ${AUTHOR}" --body "Automated demo PR at $(date -u). Scenario: ${{ steps.scenario.outputs.value }}" --base main --head "${BRANCH}" --draft=false || true); echo url=$URL >> $GITHUB_OUTPUT; fi
+      - id: pr
+        if: steps.auth.outputs.skip != 'true'
+        run: |
+          if [ -n "${{ steps.openpr.outputs.url }}" ]; then NUM=$(gh pr view "${{ steps.openpr.outputs.url }}" --json number -q .number); else NUM=$(gh pr list --state open --author "${AUTHOR}" --json number,createdAt -q 'sort_by(.createdAt) | .[0].number'); fi
+          [ "$NUM" = "null" ] || [ -z "$NUM" ] && echo number= >> $GITHUB_OUTPUT || echo number=$NUM >> $GITHUB_OUTPUT
+      - if: steps.auth.outputs.skip != 'true' && steps.pr.outputs.number
+        run: |
+          if [ $((RANDOM % 2)) -eq 0 ]; then gh pr comment ${{ steps.pr.outputs.number }} --body "General comment by ${AUTHOR} at $(date -u)"; fi
+      - id: pick_reviewer
+        if: steps.auth.outputs.skip != 'true' && steps.pr.outputs.number
+        run: |
+          pool=$(jq -r 'map(select(. != "'${{ steps.pick.outputs.pat_secret }}'"))' <<< "${REVIEWER_CANDIDATES}")
+          chosen=""; for i in {1..10}; do len=$(jq 'length' <<< "$pool"); [ "$len" -eq 0 ] && break; idx=$((RANDOM % len)); sec=$(jq -r ".[$idx]" <<< "$pool"); tok_var="S_${sec}"; tok="${!tok_var}"; [ -n "$tok" ] && chosen="$sec" && break; done
+          echo secret=$chosen >> $GITHUB_OUTPUT
+      - if: steps.auth.outputs.skip != 'true' && steps.pr.outputs.number && steps.pick_reviewer.outputs.secret
+        shell: bash
+        run: |
+          tok_var="S_${{ steps.pick_reviewer.outputs.secret }}"; REVIEWER_TOKEN="${!tok_var}"
+          [ -z "$REVIEWER_TOKEN" ] && echo "No reviewer token; skipping." && exit 0
+          ORIGINAL_GH_TOKEN="$GH_TOKEN"; unset GH_TOKEN
+          echo "$REVIEWER_TOKEN" | gh auth login --with-token
+          kinds=("COMMENT" "COMMENT" "APPROVE"); k=${kinds[$RANDOM % ${#kinds[@]}]}
+          if [ "$k" = "APPROVE" ]; then gh pr review ${{ steps.pr.outputs.number }} --approve --body "Approval at $(date -u)"; else gh pr review ${{ steps.pr.outputs.number }} --comment --body "Review comment at $(date -u)"; fi
+          gh auth logout -h github.com -y || true
+          echo "$ORIGINAL_GH_TOKEN" | gh auth login --with-token
+          echo GH_TOKEN=$ORIGINAL_GH_TOKEN >> $GITHUB_ENV
+      - if: steps.auth.outputs.skip != 'true' && steps.pr.outputs.number
+        run: |
+          # ~70% merge rate here
+          if [ $((RANDOM % 10)) -lt 7 ]; then set +e; gh pr merge ${{ steps.pr.outputs.number }} --merge --delete-branch; set -e; fi
+      - if: steps.auth.outputs.skip != 'true' && steps.pr.outputs.number
+        run: |
+          if [ $((RANDOM % 20)) -lt 3 ]; then gh pr close ${{ steps.pr.outputs.number }} --delete-branch; fi
