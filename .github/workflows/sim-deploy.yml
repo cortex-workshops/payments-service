@@ -22,7 +22,8 @@ jobs:
       ACTORS: |
         [
           {"username":"cathleen","name":"Cathleen Wright","email":"cathleen.wright@cortex.io"},
-          {"username":"taylor","name":"Taylor Schmidt","email":"taylor.schmidt@cortex.io"}
+          {"username":"taylor","name":"Taylor Schmidt","email":"taylor.schmidt@cortex.io"},
+          {"username":"mike","name":"Michael Rodriguez","email":"michael.rodriguez@cortex.io"}
         ]
     steps:
       - uses: actions/checkout@v4
