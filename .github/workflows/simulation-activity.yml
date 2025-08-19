@@ -26,18 +26,20 @@ jobs:
       S_PAT_MARION:   ${{ secrets.PAT_MARION }}
       S_PAT_ROSHNI:   ${{ secrets.PAT_ROSHNI }}
       S_PAT_GIANPAUL: ${{ secrets.PAT_GIANPAUL }}
+      S_PAT_MIKE: ${{ secrets.PAT_MIKE }}
 
       # Team actors (Payments)
       ACTORS: |
         [
           {"username":"cathleen","git_name":"Cathleen Wright","git_email":"cathleen@cortex.io","pat_secret":"PAT_CATHLEEN"},
           {"username":"sally","git_name":"Sally","git_email":"sally@cortex.io","pat_secret":"PAT_SALLY"},
-          {"username":"taylor","git_name":"Taylor Schmidt","git_email":"taylor@cortex.io","pat_secret":"PAT_TAYLOR"}
+          {"username":"taylor","git_name":"Taylor Schmidt","git_email":"taylor@cortex.io","pat_secret":"PAT_TAYLOR"},
+          {"username":"mike","git_name":"Mike Rodriguez","git_email":"mike.rodriguez@cortex.io","pat_secret":"PAT_MIKE"}
         ]
 
       # Cross-repo reviewer pool
       REVIEWER_CANDIDATES: |
-        ["PAT_TAYLOR","PAT_CATHLEEN","PAT_SALLY","PAT_JEFF","PAT_STEPH","PAT_CHASE","PAT_MARION","PAT_ROSHNI","PAT_GIANPAUL"]
+        ["PAT_TAYLOR","PAT_CATHLEEN","PAT_SALLY","PAT_JEFF","PAT_STEPH","PAT_CHASE","PAT_MARION","PAT_ROSHNI","PAT_GIANPAUL, PAT_MIKE"]
 
       # Delays (minutes)
       FIRST_REVIEW_MIN: "25"
