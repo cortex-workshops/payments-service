@@ -28,7 +28,8 @@ jobs:
         [
           {"username":"roshni","git_name":"Roshni","git_email":"roshni@cortex.io","pat_secret":"PAT_ROSHNI"},
           {"username":"taylor","git_name":"Taylor Schmidt","git_email":"taylor@cortex.io","pat_secret":"PAT_TAYLOR"}
-
+        ]
+        
       # Cross-repo reviewer pool
       REVIEWER_CANDIDATES: |
         ["PAT_TAYLOR","PAT_JEFF","PAT_STEPH","PAT_CHASE","PAT_ROSHNI","PAT_MIKE"]
